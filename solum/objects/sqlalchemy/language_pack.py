@@ -14,11 +14,13 @@
 
 import sqlalchemy as sa
 from sqlalchemy import orm
+from sqlalchemy.orm import exc
 
 from solum.objects import compiler_versions as abs_cv
 from solum.objects import language_pack as abstract
 from solum.objects import os_platform as abs_op
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class LanguagePack(sql.Base, abstract.LanguagePack):
@@ -48,6 +50,7 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
 class CompilerVersions(sql.Base, abs_cv.CompilerVersions):
 
     __tablename__ = 'compiler_versions'
+    __resource__ = 'compiler_versions'
     __table_args__ = sql.table_args()
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
@@ -55,6 +58,12 @@ class CompilerVersions(sql.Base, abs_cv.CompilerVersions):
     version = sa.Column(sa.String(36), nullable=False)
     language_pack_id = sa.Column(sa.Integer, sa.ForeignKey('language_pack.id'),
                                  nullable=False)
+
+    @classmethod
+    def get_by_language_pack_uuid(cls, context, id):
+        session = db_session.get_session(mysql_traditional_mode=True)
+        return session.query(cls).join(cls.language_pack_id).filter(
+            LanguagePack.uuid == id).all()
 
 
 class OSPlatform(sql.Base, abs_op.OSPlatform):
@@ -68,6 +77,12 @@ class OSPlatform(sql.Base, abs_op.OSPlatform):
     version = sa.Column(sa.String(36), nullable=False)
     language_pack_id = sa.Column(sa.Integer, sa.ForeignKey('language_pack.id'),
                                  nullable=False)
+
+    @classmethod
+    def get_by_language_pack_uuid(cls, context, id):
+        session = db_session.get_session(mysql_traditional_mode=True)
+        return session.query(cls).join(cls.language_pack_id).filter(
+            LanguagePack.uuid == id).all()
 
 
 class LanguagePackList(abstract.LanguagePackList):

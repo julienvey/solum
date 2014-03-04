@@ -44,6 +44,21 @@ class LanguagePackController(rest.RestController):
             pecan.response.translatable_error = excp
             raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack)
+    def put(self, data):
+        """Modify this language_pack."""
+
+        res = self._handler.update(self._id,
+                                   data.as_dict(objects.registry.LanguagePack))
+        return lp.LanguagePack.from_db_model(res, pecan.request.host_url)
+
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(status_code=204)
+    def delete(self):
+        """Delete this language_pack."""
+        return self._handler.delete(self._id)
+
 
 class LanguagePacksController(rest.RestController):
     """Manages operations on the language packs collection."""
@@ -58,6 +73,15 @@ class LanguagePacksController(rest.RestController):
         if remainder and not remainder[-1]:
             remainder = remainder[:-1]
         return LanguagePackController(language_pack_id), remainder
+
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack,
+                         status_code=201)
+    def post(self, data):
+        """Create a new language_pack."""
+        return lp.LanguagePack.from_db_model(
+            self._handler.create(data.as_dict(objects.registry.LanguagePack)),
+            pecan.request.host_url)
 
     @wsme_pecan.wsexpose([lp.LanguagePack])
     def get_all(self):
