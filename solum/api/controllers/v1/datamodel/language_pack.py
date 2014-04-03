@@ -129,6 +129,10 @@ class LanguagePack(api_types.Base):
         as_dict['build_tool_chain'] = build_tools
         return cls(**(as_dict))
 
+    def as_dict_(self):
+        valid_keys = set(self.__dict__.keys())
+        return self.as_dict_from_keys(valid_keys)
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/language_packs/123456abcdef',
