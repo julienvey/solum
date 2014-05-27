@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import keystoneclient.exceptions as kc_exception
+from keystoneclient import session
 from keystoneclient.v3 import client as kc_v3
+from keystoneclient.v3.contrib.oauth1 import auth
 from oslo.config import cfg
 
 from solum.common import context
@@ -52,6 +54,7 @@ class KeystoneClientV3(object):
         self.context = context
         self._client = None
         self._admin_client = None
+        self._consumer = None
 
         if self.context.auth_url:
             self.v3_endpoint = self.context.auth_url.replace('v2.0', 'v3')
@@ -165,6 +168,24 @@ class KeystoneClientV3(object):
             self.context.to_dict())
         trust_context.trust_id = trust.id
         return trust_context
+
+    @property
+    def solum_oauth_consumer(self):
+        if not self._consumer:
+            self._consumer = self.admin_client.oauth1.consumers.create("solum")
+        return self._consumer
+
+    def _create_request_token(self, project_id):
+        return self.admin_client.oauth1.request_tokens.create(
+            self.solum_oauth_consumer.id,
+            self.solum_oauth_consumer.secret,
+            project_id)
+
+    def _authorize_request_token(self, request_token):
+
+    def create_oauth_client(self):
+        self.admin_client.oauth1.consumers.create()
+
 
     def delete_trust(self, trust_id):
         """Delete the specified trust."""
