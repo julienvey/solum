@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# This script is specific to ubuntu, since gitolite has been tested only for it
+# http://gitolite.readthedocs.org/en/latest/install.html#requirements
+
+# Install gitolite
+wget http://downloads.drone.io/latest/drone.deb
+dpkg -i drone.deb
